@@ -1,0 +1,4 @@
+backups/
+*.pyc
+__pycache__/
+# imgs/ 目录需要提交，不要忽略
