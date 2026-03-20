@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美团美甲热点决策看板</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;background:#f4f6f9;color:#2d3748;font-size:14px;line-height:1.5}
+
+/* Header */
+.hdr{background:#fff;border-bottom:1px solid #e8ecf0;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.hdr-logo{font-size:17px;font-weight:800;color:#e53e6d}
+.hdr-logo span{color:#2d3748}
+.hdr-badge{font-size:11px;background:#fff0f5;color:#e53e6d;padding:3px 9px;border-radius:12px;font-weight:600}
+.hdr-time{font-size:11px;color:#a0aec0;background:#f8f9fa;padding:3px 9px;border-radius:12px}
+.hdr-r{font-size:11px;color:#a0aec0}
+
+/* Tabs */
+.tabs{background:#fff;border-bottom:1px solid #e8ecf0;padding:0 28px;display:flex}
+.tab{padding:14px 22px;font-size:14px;font-weight:500;color:#718096;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+.tab:hover{color:#e53e6d}
+.tab.active{color:#e53e6d;border-bottom-color:#e53e6d;font-weight:700}
+
+/* Content */
+.content{padding:22px 28px;max-width:1400px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+
+/* ===== TAB1: 时令热点 ===== */
+.s-wrap{display:grid;grid-template-columns:260px 1fr;gap:18px;min-height:600px}
+.s-nav{display:flex;flex-direction:column;gap:8px}
+.s-node{background:#fff;border:1.5px solid #e8ecf0;border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .2s}
+.s-node:hover{border-color:#f9a8c9}
+.s-node.active{border-color:#e53e6d;background:#fff8fb;box-shadow:0 2px 8px rgba(229,62,109,.1)}
+.s-node-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.s-node-name{font-size:15px;font-weight:700;color:#1a202c}
+.s-node-date{font-size:11px;color:#a0aec0;margin-bottom:3px}
+.s-node-desc{font-size:12px;color:#718096}
+.s-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.sp-now{background:#fff0f5;color:#e53e6d}
+.sp-soon{background:#fffbeb;color:#d97706}
+.sp-plan{background:#f0f4f8;color:#a0aec0}
+
+.s-detail{background:#fff;border-radius:12px;border:1px solid #e8ecf0;padding:22px}
+.s-dhead{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #f0f0f0}
+.s-dtitle{font-size:19px;font-weight:800;color:#1a202c}
+.s-dmeta{font-size:12px;color:#718096;margin-top:6px;line-height:1.7}
+.s-dmeta strong{color:#e53e6d}
+
+.sig-section-label{font-size:12px;font-weight:700;color:#718096;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sig-section-label::before{content:'';width:3px;height:13px;background:#e53e6d;border-radius:2px;display:inline-block}
+.sig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.sig-card{border:1px solid #e8ecf0;border-radius:10px;padding:14px;background:#fafafa;transition:all .2s;cursor:default}
+.sig-card:hover{border-color:#f9a8c9;background:#fff;box-shadow:0 2px 10px rgba(229,62,109,.08)}
+.sig-card.sig-new{border-left:3px solid #e53e6d}
+.sig-card.sig-stable{border-left:3px solid #48bb78}
+.sig-card.sig-rise{border-left:3px solid #ed8936}
+.sig-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.sig-name{font-size:14px;font-weight:700;color:#1a202c}
+.sig-badge{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;white-space:nowrap}
+.sb-new{background:#fff0f5;color:#e53e6d}
+.sb-rise{background:#fffbeb;color:#d97706}
+.sb-stable{background:#f0fff4;color:#38a169}
+.sb-cold{background:#fffbeb;color:#92400e;border:1px dashed #f59e0b}
+
+/* 冷启动横幅 */
+.cold-banner{background:#fffbeb;border:1.5px dashed #f59e0b;border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px}
+.cold-banner-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.cold-banner-text{font-size:12px;color:#78350f;line-height:1.7}
+.cold-banner-text strong{color:#92400e}
+.cold-banner-text a{color:#d97706;text-decoration:underline;cursor:pointer}
+.sig-imgs{display:flex;gap:6px;margin-bottom:8px}
+.sig-img{width:62px;height:62px;object-fit:cover;border-radius:7px;flex-shrink:0}
+.sig-evidence{font-size:11px;color:#4a5568;line-height:1.6;margin-bottom:7px}
+.sig-evidence strong{color:#e53e6d}
+.sig-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.sig-tag{font-size:10px;background:#f0f4f8;color:#718096;padding:2px 7px;border-radius:8px}
+.sig-source{font-size:10px;color:#a0aec0;font-style:italic}
+
+/* ===== TAB2: 突发热点 ===== */
+.b-header-note{background:#fff;border:1px solid #e8ecf0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#718096;line-height:1.7}
+.b-header-note strong{color:#2d3748}
+.burst-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px}
+.bc{background:#fff;border:1px solid #e8ecf0;border-radius:12px;padding:20px;transition:all .2s}
+.bc:hover{box-shadow:0 4px 16px rgba(0,0,0,.09);transform:translateY(-1px)}
+.bc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.bc-title{font-size:17px;font-weight:800;color:#1a202c}
+.bc-src{font-size:11px;color:#a0aec0;margin-top:3px}
+.bc-heat{text-align:right}
+.bc-score{font-size:24px;font-weight:800;color:#e53e6d;line-height:1}
+.bc-score-lbl{font-size:10px;color:#a0aec0}
+
+.lc{margin:12px 0}
+.lc-lbl{font-size:11px;color:#a0aec0;margin-bottom:5px}
+.lc-track{display:flex;height:7px;border-radius:4px;overflow:hidden;background:#f0f0f0;gap:2px}
+.lc-seg{height:100%;border-radius:2px}
+.lc-labels{display:flex;justify-content:space-between;margin-top:4px}
+.lc-lbl-item{font-size:10px;color:#a0aec0;flex:1;text-align:center}
+.lc-lbl-item.cur{color:#e53e6d;font-weight:700}
+
+.bc-imgs{display:flex;gap:8px;margin:12px 0}
+.bc-img{flex:1;height:120px;object-fit:cover;border-radius:8px;min-width:0}
+
+.bc-evidence{margin-bottom:12px}
+.bc-ev-title{font-size:11px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.bc-ev-list{display:flex;flex-direction:column;gap:4px}
+.bc-ev-item{font-size:12px;color:#4a5568;display:flex;align-items:flex-start;gap:5px}
+.bc-ev-item::before{content:'▸';color:#e53e6d;flex-shrink:0;margin-top:1px}
+
+.bc-variants{margin-bottom:12px}
+.bc-var-title{font-size:11px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.bc-var-tags{display:flex;flex-wrap:wrap;gap:5px}
+.bvt{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500}
+.bvt-hot{background:#fff0f5;color:#e53e6d;border:1px solid #ffd6e7}
+.bvt-warm{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.bvt-cool{background:#ebf8ff;color:#3182ce;border:1px solid #bee3f8}
+
+.bc-alert{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400e;display:flex;gap:6px;align-items:flex-start}
+
+/* ===== TAB3: 运营策略 ===== */
+.strat-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.strat-filters{display:flex;gap:7px;flex-wrap:wrap}
+.fb{padding:6px 14px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid #e2e8f0;background:#fff;color:#718096;cursor:pointer;transition:all .2s}
+.fb:hover{border-color:#e53e6d;color:#e53e6d}
+.fb.active{background:#e53e6d;color:#fff;border-color:#e53e6d}
+.strat-cnt{font-size:12px;color:#a0aec0}
+
+.strat-list{display:flex;flex-direction:column;gap:16px}
+.sc{background:#fff;border-radius:12px;padding:20px;border-left:4px solid #e53e6d;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:all .2s}
+.sc:hover{box-shadow:0 4px 16px rgba(0,0,0,.09)}
+.sc.sc-seasonal{border-left-color:#48bb78}
+.sc.sc-burst{border-left-color:#e53e6d}
+.sc.sc-combined{border-left-color:#ed8936}
+
+.sc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.sc-kw{font-size:20px;font-weight:800;color:#1a202c}
+.sc-type-badge{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.stb-s{background:#f0fff4;color:#38a169}
+.stb-b{background:#fff0f5;color:#e53e6d}
+.stb-c{background:#fffaf0;color:#d97706}
+
+.sc-origin{background:#f8f9fc;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:#4a5568;line-height:1.7}
+.sc-origin strong{color:#e53e6d}
+.origin-tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:6px;font-weight:600;margin-right:3px}
+.ot-s{background:#f0fff4;color:#38a169}
+.ot-b{background:#fff0f5;color:#e53e6d}
+.ot-c{background:#fffaf0;color:#d97706}
+
+.sc-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:14px}
+.sc-sec-title{font-size:11px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+
+.kw-list{display:flex;flex-direction:column;gap:5px}
+.kw-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8f9fc;border-radius:7px}
+.kw-text{font-size:12px;color:#2d3748;font-weight:500}
+.kw-pri{font-size:10px;padding:1px 6px;border-radius:7px;font-weight:600}
+.kp-h{background:#fff0f5;color:#e53e6d}
+.kp-m{background:#fffbeb;color:#d97706}
+.kp-l{background:#f0f4f8;color:#a0aec0}
+
+.recall-feats{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
+.recall-feat{font-size:11px;background:#ebf8ff;color:#3182ce;padding:2px 8px;border-radius:8px}
+.recall-imgs{display:flex;gap:6px}
+.recall-img{width:56px;height:56px;border-radius:8px;object-fit:cover;background:#f0f0f0}
+
+.supply-item{margin-bottom:8px}
+.supply-row{display:flex;justify-content:space-between;margin-bottom:3px}
+.supply-name{font-size:12px;color:#4a5568}
+.supply-nums{font-size:11px;color:#a0aec0}
+.supply-bar{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden}
+.supply-fill{height:100%;border-radius:3px}
+.sf-ok{background:linear-gradient(90deg,#68d391,#48bb78)}
+.sf-warn{background:linear-gradient(90deg,#f6ad55,#ed8936)}
+.sf-gap{background:linear-gradient(90deg,#fc8181,#f56565)}
+.gap-alert{background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:9px 12px;margin-top:8px}
+.gap-alert-title{font-size:11px;font-weight:700;color:#c53030;margin-bottom:3px}
+.gap-alert-text{font-size:11px;color:#742a2a;line-height:1.5}
+
+.sc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #f0f0f0}
+.btn-pub{background:linear-gradient(135deg,#e53e6d,#f05a7e);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-pub:hover{opacity:.88;transform:translateY(-1px)}
+.btn-pub.published{background:linear-gradient(135deg,#48bb78,#38a169);cursor:default;transform:none}
+.btn-promo{background:#fff;color:#d97706;border:1px solid #f6ad55;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px}
+.btn-promo:hover{background:#fffbeb}
+.sc-est{font-size:12px;color:#a0aec0}
+
+/* Lightbox */
+.lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9000;display:none;align-items:center;justify-content:center;cursor:zoom-out}
+.lb-overlay.open{display:flex}
+.lb-img{max-width:88vw;max-height:88vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain}
+.lb-close{position:absolute;top:20px;right:26px;color:#fff;font-size:32px;cursor:pointer;line-height:1;opacity:.8;transition:opacity .2s}
+.lb-close:hover{opacity:1}
+.lb-caption{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;white-space:nowrap;max-width:80vw;overflow:hidden;text-overflow:ellipsis}
+
+/* Clickable images */
+.bc-img,.sig-img,.recall-img{cursor:zoom-in;transition:transform .15s,box-shadow .15s}
+.bc-img:hover,.sig-img:hover,.recall-img:hover{transform:scale(1.05);box-shadow:0 4px 16px rgba(0,0,0,.18)}
+
+/* Note links */
+.note-link{color:#e53e6d;text-decoration:none;border-bottom:1px dashed #f9a8c9;font-weight:500;transition:all .15s}
+.note-link:hover{color:#c0305a;border-bottom-color:#e53e6d}
+
+/* Toast */
+.toast{position:fixed;top:76px;right:28px;background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 8px 24px rgba(0,0,0,.12);font-size:13px;color:#2d3748;z-index:9999;transform:translateX(120%);transition:transform .3s ease;max-width:320px;border-left:4px solid #48bb78}
+.toast.show{transform:translateX(0)}
+.toast.warn{border-left-color:#ed8936}
+
+@media(max-width:900px){
+  .s-wrap{grid-template-columns:1fr}
+  .sc-body{grid-template-columns:1fr}
+  .burst-grid{grid-template-columns:1fr}
+  .content{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-logo">美团<span>美甲热点</span>决策看板</div>
+    <div class="hdr-badge">小红书实时数据</div>
+    <div class="hdr-time">2026-03-20 12:00 更新</div>
+  </div>
+  <div class="hdr-r">采集路径：搜索联想词扫描 · 热门榜单 · KOL账号巡逻</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('seasonal',this)">🌸 时令热点</div>
+  <div class="tab" onclick="switchTab('burst',this)">⚡ 突发热点</div>
+  <div class="tab" onclick="switchTab('strategy',this)">🎯 运营策略</div>
+</div>
+
+<div class="content">
+
+<!-- ===== TAB1 ===== -->
+<div class="panel active" id="p-seasonal">
+  <div class="cold-banner">
+    <div class="cold-banner-icon">⏳</div>
+    <div class="cold-banner-text">
+      <strong>冷启动期提示（Day 1/14）：</strong>当前系统于 2026-03-13 首次运行，尚未积累历史数据。热点词汇和笔记互动数据均为真实采集，但<strong>趋势方向标签（飙升/上升/今年新增/历史稳定）</strong>需积累 14 天历史快照后才能基于差分计算得出，当前显示为「⏳ 数据积累中」。供给摸排数据为 Mock，待接入美团站内 SKU 系统后替换。
+      <a onclick="window.open('solution.html','_blank')">查看完整技术方案 →</a>
+    </div>
+  </div>
+  <div class="s-wrap">
+    <div class="s-nav">
+      <div class="s-node active" onclick="showNode('chunfen',this)">
+        <div class="s-node-top"><span class="s-node-name">春分</span><span class="s-pill sp-now">当前</span></div>
+        <div class="s-node-date">3月20日 · 距今7天</div>
+        <div class="s-node-desc">万物复苏，换甲需求高峰</div>
+      </div>
+      <div class="s-node" onclick="showNode('qingming',this)">
+        <div class="s-node-top"><span class="s-node-name">清明小长假</span><span class="s-pill sp-soon">即将</span></div>
+        <div class="s-node-date">4月4日 · 距今22天</div>
+        <div class="s-node-desc">出游场景，清新户外风</div>
+      </div>
+      <div class="s-node" onclick="showNode('wuyi',this)">
+        <div class="s-node-top"><span class="s-node-name">五一黄金周</span><span class="s-pill sp-soon">预热</span></div>
+        <div class="s-node-date">5月1日 · 距今49天</div>
+        <div class="s-node-desc">出行拍照，高峰换甲季</div>
+      </div>
+      <div class="s-node" onclick="showNode('muqin',this)">
+        <div class="s-node-top"><span class="s-node-name">母亲节</span><span class="s-pill sp-plan">布局</span></div>
+        <div class="s-node-date">5月11日 · 距今59天</div>
+        <div class="s-node-desc">亲子礼物场景</div>
+      </div>
+    </div>
+
+    <div class="s-detail">
+
+      <!-- 春分 -->
+      <div id="node-chunfen">
+        <div class="s-dhead">
+          <div class="s-dtitle">🌸 春分 · 2026年3月20日</div>
+          <div class="s-dmeta">
+            距今7天 · 去年同期热词：花卉甲、多巴胺、嫩粉色<br>
+            今年新增信号：<strong>江坂丽奈色×春日</strong>、<strong>郁金香</strong>（联想词扫描首次出现）<br>
+            数据来源：2026-03-13 小红书搜索联想词扫描 + 热门榜单（按互动量排序）
+          </div>
+        </div>
+        <div class="sig-section-label">今年春分垂类信号（共6条，按热度排序）</div>
+        <div class="sig-grid">
+
+          <div class="sig-card sig-new">
+            <div class="sig-top">
+              <div class="sig-name">江坂丽奈色×春日</div>
+              <span class="sig-badge sb-cold">⏳ 数据积累中</span>
+            </div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/ezaka_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/ezaka_nail_02.webp" alt="">
+              <img class="sig-img" src="imgs/ezaka_nail_03.webp" alt="">
+            </div>            <div class="sig-evidence">代表笔记：<a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E6%B1%9F%E5%9D%82%E4%B8%BD%E5%A5%88%E7%BE%8E%E7%94%B2&source=web_explore_feed" target="_blank"><strong>7.1万赞</strong>（“娇小鼠了啊啊啊！好女人”）</a>· KOL雨祭Yujinails <strong>1.4万赞</strong>（“致力于调出适合每个客妃的江坂丽奈色”）· 03-01“决赛圈—4选—1” <strong>4222赞</strong></div>            <div class="sig-tags">
+              <span class="sig-tag">粉棕玫瑰色</span><span class="sig-tag">娇嗲感</span><span class="sig-tag">法式款</span><span class="sig-tag">猫眼版</span><span class="sig-tag">改良版</span>
+            </div>
+            <div class="sig-source">联想词来源：搜索"江坂丽奈美甲"筛选标签出现"黄黑皮""改良""猫眼版""极光粉"</div>
+          </div>
+
+          <div class="sig-card sig-rise">
+            <div class="sig-top">
+              <div class="sig-name">早春淡人甲</div>
+              <span class="sig-badge sb-cold">⏳ 数据积累中</span>
+            </div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/danren_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/danren_nail_03.webp" alt="">
+              <img class="sig-img" src="imgs/spring_nail_06.webp" alt="">
+            </div>
+            <div class="sig-evidence">KOL男人相（54万粉）5天前发 <strong>2.9万赞</strong> · <a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E7%99%BD%E5%BC%80%E6%B0%B4%E7%BE%8E%E7%94%B2&source=web_explore_feed" target="_blank">“美甲的尽头——白开水美甲” <strong>6.8万赞</strong></a> · <a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E6%B7%A1%E4%BA%BA%E7%94%B2&source=web_explore_feed" target="_blank">“Nail☁️淡人早春美甲” <strong>8271赞（02-28）</strong></a></div>
+            <div class="sig-tags">
+              <span class="sig-tag">白开水</span><span class="sig-tag">冰透裸色</span><span class="sig-tag">高级显白</span><span class="sig-tag">小短甲</span><span class="sig-tag">清冷感</span>
+            </div>
+            <div class="sig-source">联想词来源：搜索"淡人甲"出现"淡人老钱风""淡人ins风""初春淡人多巴胺"</div>
+          </div>
+
+          <div class="sig-card sig-rise">
+            <div class="sig-top">
+              <div class="sig-name">春日莫奈油画风</div>
+              <span class="sig-badge sb-cold">⏳ 数据积累中</span>
+            </div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/monet_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/monet_nail_02.webp" alt="">
+              <img class="sig-img" src="imgs/qingming_nail_02.webp" alt="">
+            </div>
+            <div class="sig-evidence"><a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E6%98%A5%E6%97%A5%E8%8E%AB%E5%A5%88%E7%BE%8E%E7%94%B2&source=web_explore_feed" target="_blank">“走进莫奈花园” <strong>7374赞</strong></a> · <a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E6%98%A5%E6%97%A5%E8%8E%AB%E5%A5%88%E7%BE%8E%E7%94%B2&source=web_explore_feed" target="_blank">“春日莫奈油画花园🧧温柔又显白” <strong>3761赞（03-05）</strong></a></div>
+            <div class="sig-tags">
+              <span class="sig-tag">手绘</span><span class="sig-tag">油画晕染</span><span class="sig-tag">温柔显白</span><span class="sig-tag">粉紫色系</span>
+            </div>
+            <div class="sig-source">联想词来源：搜索"春日莫奈美甲"出现"莫奈油画风美甲""早春莫奈美甲"</div>
+          </div>
+
+          <div class="sig-card sig-new">
+            <div class="sig-top">
+              <div class="sig-name">郁金香美甲</div>
+              <span class="sig-badge sb-cold">⏳ 数据积累中</span>
+            </div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/tulip_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/tulip_nail_02.webp" alt="">
+              <img class="sig-img" src="imgs/tulip_nail_03.webp" alt="">
+            </div>
+            <div class="sig-evidence">搜索"2026美甲"联想词出现<strong>"郁金香"</strong>，历史无此词，为今年首次出现的新增信号</div>
+            <div class="sig-tags">
+              <span class="sig-tag">立体造型</span><span class="sig-tag">穿戴甲</span><span class="sig-tag">猫眼款</span><span class="sig-tag">手绘花卉</span>
+            </div>
+          <div class="sig-source">联想词来源：搜索“2026美甲”出现“郁金香”信号 xb7 首次出现，趋势待验证（14天后可得出）</div>
+          </div>
+
+          <div class="sig-card sig-stable">
+            <div class="sig-top">
+              <div class="sig-name">早春多巴胺美甲</div>
+              <span class="sig-badge sb-cold">⏳ 数据积累中</span>
+            </div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/dopamine_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/dopamine_nail_02.webp" alt="">
+              <img class="sig-img" src="imgs/spring_nail_04.webp" alt="">
+            </div>
+            <div class="sig-evidence"><a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E5%A4%9A%E5%B7%B4%E8%83%BA%E7%BE%8E%E7%94%B2&source=web_explore_feed" target="_blank">代表笔记 <strong>8049赞</strong>（“春天和多巴胺适配好高”）</a>· 联想词出现“早春多巴胺美甲”</div>
+            <div class="sig-tags">
+              <span class="sig-tag">彩色</span><span class="sig-tag">活力</span><span class="sig-tag">猫眼款</span><span class="sig-tag">马卡龙</span>
+            </div>
+           <div class="sig-source">联想词来源：搜索“早春美甲”联想词 xb7 连续出现，历史趋势待验证</div>          </div>
+
+          <div class="sig-card sig-rise">
+            <div class="sig-top">
+              <div class="sig-name">初春豆沙裸色法式</div>
+              <span class="sig-badge sb-cold">⏳ 数据积累中</span>
+            </div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/spring_nail_05.webp" alt="">
+              <img class="sig-img" src="imgs/spring_nail_07.webp" alt="">
+              <img class="sig-img" src="imgs/qingming_nail_03.webp" alt="">
+            </div>
+            <div class="sig-evidence"><a class="note-link" href="https://www.xiaohongshu.com/search_result?keyword=%E6%98%A5%E6%97%A5%E7%BE%8E%E7%94%B2&source=web_explore_feed" target="_blank">“温柔的春天和温柔的豆沙裸更配哦” <strong>7486赞（02-26）</strong></a> · 联想词出现“初春浅色系美甲”</div>
+            <div class="sig-tags">
+              <span class="sig-tag">豆沙色</span><span class="sig-tag">裸色系</span><span class="sig-tag">温柔</span><span class="sig-tag">法式</span>
+            </div>
+            <div class="sig-source">联想词来源：搜索"早春美甲"出现"初春浅色系美甲""豆沙裸美甲"</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 清明 -->
+      <div id="node-qingming" style="display:none">
+        <div class="s-dhead">
+          <div class="s-dtitle">🌿 清明小长假 · 2026年4月4日</div>
+          <div class="s-dmeta">距今22天 · 去年同期热词：绿色系、清透感、出游甲<br>今年新增信号：<strong>富家千金风</strong>、<strong>猫眼海莉×清明</strong></div>
+        </div>
+        <div class="sig-section-label">清明垂类信号（来源：搜索"清明美甲"联想词）</div>
+        <div class="sig-grid">
+          <div class="sig-card sig-rise">
+            <div class="sig-top"><div class="sig-name">莫奈花园猫眼</div><span class="sig-badge sb-cold">⏳ 数据积累中</span></div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/qingming_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/qingming_nail_02.webp" alt="">
+              <img class="sig-img" src="imgs/monet_nail_01.webp" alt="">
+            </div>
+            <div class="sig-evidence">代表笔记 <strong>7374赞</strong> · 联想词出现"莫奈花园猫眼"</div>
+            <div class="sig-tags"><span class="sig-tag">猫眼</span><span class="sig-tag">油画</span><span class="sig-tag">清透</span></div>
+            <div class="sig-source">联想词来源：搜索"清明美甲"出现"莫奈花园"</div>
+          </div>
+          <div class="sig-card sig-new">
+            <div class="sig-top"><div class="sig-name">富家千金风</div><span class="sig-badge sb-cold">⏳ 数据积累中</span></div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/bainv_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/qingming_nail_04.webp" alt="">
+              <img class="sig-img" src="imgs/qingming_nail_03.webp" alt="">
+            </div>
+            <div class="sig-evidence">搜索"清明美甲"筛选标签出现<strong>"富家千金风"</strong>，今年新增</div>
+            <div class="sig-tags"><span class="sig-tag">浅金</span><span class="sig-tag">显白</span><span class="sig-tag">高级感</span></div>
+            <div class="sig-source">联想词来源：搜索"清明美甲"筛选标签</div>
+          </div>
+          <div class="sig-card sig-stable">
+            <div class="sig-top"><div class="sig-name">绿色冰透系</div><span class="sig-badge sb-cold">⏳ 数据积累中</span></div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/bohol_nail_01.webp" alt="">
+              <img class="sig-img" src="imgs/bohol_nail_02.webp" alt="">
+              <img class="sig-img" src="imgs/bohol_nail_03.webp" alt="">
+            </div>
+            <div class="sig-evidence">联想词中持续出现，历史趋势待验证（需历史数据支撑）</div>
+            <div class="sig-tags"><span class="sig-tag">薄荷绿</span><span class="sig-tag">冰透</span><span class="sig-tag">镜面</span></div>
+            <div class="sig-source">联想词来源：搜索“清明美甲”联想词中出现，历史趋势待验证</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 五一 -->
+      <div id="node-wuyi" style="display:none">
+        <div class="s-dhead">
+          <div class="s-dtitle">🎉 五一黄金周 · 2026年5月1日</div>
+          <div class="s-dmeta">距今49天 · 现在开始布局搜索词，预热期投放</div>
+        </div>
+        <div class="sig-section-label">五一预热信号（联想词扫描中，持续监控）</div>
+        <div class="sig-grid">
+          <div class="sig-card sig-stable">
+            <div class="sig-top"><div class="sig-name">出游美甲</div><span class="sig-badge sb-stable">预热期</span></div>
+            <div class="sig-imgs">
+              <img class="sig-img" src="imgs/dopamine_nail_03.webp" alt="">
+              <img class="sig-img" src="imgs/spring_nail_08.webp" alt="">
+            </div>
+            <div class="sig-evidence">联想词中出现，预热期信号，趋势待验证</div>
+            <div class="sig-tags"><span class="sig-tag">拍照</span><span class="sig-tag">出游</span><span class="sig-tag">多巴胺</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 母亲节 -->
+      <div id="node-muqin" style="display:none">
+        <div class="s-dhead">
+          <div class="s-dtitle">💐 母亲节 · 2026年5月11日</div>
+          <div class="s-dmeta">距今59天 · 提前布局礼物场景词</div>
+        </div>
+        <div class="sig-section-label">母亲节预热信号</div>
+        <div class="sig-grid">
+          <div class="sig-card sig-stable">
+            <div class="sig-top"><div class="sig-name">妈妈美甲礼物</div><span class="sig-badge sb-stable">布局期</span></div>
+            <div class="sig-imgs"><img class="sig-img" src="imgs/spring_nail_06.webp" alt=""></div>
+            <div class="sig-evidence">礼物场景词，联想词中出现，预热期布局</div>
+            <div class="sig-tags"><span class="sig-tag">礼物</span><span class="sig-tag">温柔</span><span class="sig-tag">裸色</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB2 ===== -->
+<div class="panel" id="p-burst">
+  <div class="b-header-note">
+    <strong>数据采集说明：</strong>以下热点通过三路机制发现 ——
+    ①搜索联想词扫描（"美甲"大词 + 20个垂类词联想词提取，识别新出现词汇）；
+    ②热门榜单抓取（按互动量排序Top笔记，提取高频词汇）；
+    ③KOL账号巡逻（头部美甲博主最新笔记监控，如男人相54万粉、雨祭Yujinails等）。
+    采集时间：2026-03-20 12:00
+  </div>
+  <div class="burst-grid">
+
+    <!-- 海莉甲 -->
+    <div class="bc">
+      <div class="bc-top">
+        <div>
+          <div class="bc-title">海莉甲 / 海莉醋酸甲</div>
+          <div class="bc-src">触发来源：Hailey Baldwin（贾斯汀比伯妻子）美甲造型出圈 · 女星同款效应 · 工艺叠加（醋酸甲）</div>
+        </div>
+        <div class="bc-heat"><div class="bc-score">95</div><div class="bc-score-lbl">热度指数</div></div>
+      </div>
+      <div class="lc">
+        <div class="lc-lbl">生命周期</div>
+        <div class="lc-track">
+          <div class="lc-seg" style="width:10%;background:#fbb040"></div>
+          <div class="lc-seg" style="width:35%;background:#ff6b9d"></div>
+          <div class="lc-seg" style="width:45%;background:#9f7aea"></div>
+          <div class="lc-seg" style="width:10%;background:#68d391"></div>
+        </div>
+        <div class="lc-labels">
+          <span class="lc-lbl-item">萌芽</span>
+          <span class="lc-lbl-item">爆发</span>
+          <span class="lc-lbl-item cur">▶ 风格化期</span>
+          <span class="lc-lbl-item">沉淀</span>
+        </div>
+      </div>
+      <div class="bc-imgs">
+        <img class="bc-img" src="imgs/haili_cusuan_01.webp" alt="海莉醋酸甲·1.1万赞">
+        <img class="bc-img" src="imgs/haili_cusuan_02.webp" alt="醋酸+海莉甲·1.8万赞">
+        <img class="bc-img" src="imgs/haili_cusuan_04.webp" alt="都去做海莉醋酸·3067赞">
+        <img class="bc-img" src="imgs/haili_cusuan_05.webp" alt="醋酸海莉·2746赞">
+      </div>
+      <div class="bc-evidence">
+        <div class="bc-ev-title">数据证据（2026-03-20 实时更新）</div>
+        <div class="bc-ev-list">
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/6870996f00000000110022d9" target="_blank">「nails check🤍𐙚˙⋆.˚ 当我把珍珠放手上」</a> · 03-20 · <strong>8.8万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/68970f1d0000000023033034" target="_blank">「New nail✨升级版海莉甲 公主们请做！」</a> · 03-20 · <strong>7.7万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/6800c68e000000001c029872" target="_blank">「湿漉漉的海莉婚甲」</a> · 03-20 · <strong>2.5万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69552fb4000000001e037137" target="_blank">「水当当的猫眼蹭海莉哪能不爱呀 真的太！！🤩」</a> · 03-20 · <strong>2.4万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/6859f933000000001c0346f6" target="_blank">「乳白珍珠白海莉甲｜海莉甲只有零次和无数次」</a> · 03-20 · <strong>1.4万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69021dcb000000000503b50d" target="_blank">「清透感🤍干干净净」</a> · 03-20 · <strong>1.1万赞</strong></div>
+        </div>
+      </div>
+      <div class="bc-variants">
+        <div class="bc-var-title">已识别变体（核心变体：海莉醋酸甲）</div>
+        <div class="bc-var-tags">
+          <span class="bvt bvt-hot">海莉醋酸甲 🔥最强变体</span>
+          <span class="bvt bvt-hot">海莉醋酸玫瑰金法式</span>
+          <span class="bvt bvt-hot">春夏海莉醋酸白月光</span>
+          <span class="bvt bvt-warm">水光猫眼海莉甲</span>
+          <span class="bvt bvt-warm">海莉醋酸本甲</span>
+          <span class="bvt bvt-cool">海莉甲短甲版</span>
+          <span class="bvt bvt-cool">春日海莉甲</span>
+        </div>
+      </div>
+      <div class="bc-alert">⚡ 正在进入风格化期：「海莉醋酸甲」已成为最强变体词，单独搜索量超过本体词。建议将「海莉醋酸甲」作为独立搜索词投放，同时布局「春夏海莉醋酸」时令合成词</div>
+    </div>
+
+    <!-- 江坂丽奈甲 -->
+    <div class="bc">
+      <div class="bc-top">
+        <div>
+          <div class="bc-title">江坂丽奈美甲</div>
+          <div class="bc-src">触发来源：日剧《重启人生》角色 · 影剧综带火 · KOL持续推动</div>
+        </div>
+        <div class="bc-heat"><div class="bc-score">88</div><div class="bc-score-lbl">热度指数</div></div>
+      </div>
+      <div class="lc">
+        <div class="lc-lbl">生命周期</div>
+        <div class="lc-track">
+          <div class="lc-seg" style="width:15%;background:#fbb040"></div>
+          <div class="lc-seg" style="width:30%;background:#ff6b9d"></div>
+          <div class="lc-seg" style="width:40%;background:#9f7aea"></div>
+          <div class="lc-seg" style="width:15%;background:#68d391"></div>
+        </div>
+        <div class="lc-labels">
+          <span class="lc-lbl-item">萌芽</span>
+          <span class="lc-lbl-item">爆发</span>
+          <span class="lc-lbl-item cur">▶ 风格化期</span>
+          <span class="lc-lbl-item">沉淀</span>
+        </div>
+      </div>
+      <div class="bc-imgs">
+        <img class="bc-img" src="imgs/ezaka_nail_01.webp" alt="">
+        <img class="bc-img" src="imgs/ezaka_nail_02.webp" alt="">
+        <img class="bc-img" src="imgs/ezaka_nail_03.webp" alt="">
+        <img class="bc-img" src="imgs/ezaka_nail_04.webp" alt="">
+      </div>
+      <div class="bc-evidence">
+        <div class="bc-ev-title">数据证据（2026-03-20 实时更新）</div>
+        <div class="bc-ev-list">
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/68b5302d000000001d011dc9" target="_blank">「娇嗲鼠了啊啊啊！好女人 💅」</a> · 03-20 · <strong>7.5万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69882486000000000a02a78d" target="_blank">「🎀好喜欢这次的新美甲！」</a> · 03-20 · <strong>2.0万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69b25ee50000000004001ec3" target="_blank">「春日嗲味樱花极光美甲🌸」</a> · 03-20 · <strong>1.7万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/6945241d000000001e02194f" target="_blank">「🎀嗲门永存🎀（水蜜桃版」</a> · 03-20 · <strong>1.0万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69a27cc7000000001a01c121" target="_blank">「法式+江坂丽奈色=春日美女必做甲～」</a> · 03-20 · <strong>6406赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69a004bc000000001600bd30" target="_blank">「美甲决赛圈 4 选 1 江坂丽奈美甲」</a> · 03-20 · <strong>4617赞</strong></div>
+        </div>
+      </div>
+      <div class="bc-variants">
+        <div class="bc-var-title">已识别变体（来自筛选标签）</div>
+        <div class="bc-var-tags">
+          <span class="bvt bvt-hot">江坂丽奈色原版</span>
+          <span class="bvt bvt-hot">江坂丽奈改良版</span>
+          <span class="bvt bvt-hot">江坂丽奈猫眼版</span>
+          <span class="bvt bvt-warm">江坂丽奈×黄黑皮</span>
+          <span class="bvt bvt-warm">法式+江坂丽奈色</span>
+          <span class="bvt bvt-cool">江坂丽奈×春日</span>
+        </div>
+      </div>
+      <div class="bc-alert">⚡ 正在进入风格化期：单点词热度稳定，变体词持续涌现，建议开始经营"娇嗲风"风格词，同时把握春日结合窗口期</div>
+    </div>
+
+    <!-- 淡人甲 -->
+    <div class="bc">
+      <div class="bc-top">
+        <div>
+          <div class="bc-title">淡人甲 / 白开水美甲</div>
+          <div class="bc-src">触发来源：KOL"男人相"（54万粉）持续推动 · 社交文化概念</div>
+        </div>
+        <div class="bc-heat"><div class="bc-score">82</div><div class="bc-score-lbl">热度指数</div></div>
+      </div>
+      <div class="lc">
+        <div class="lc-lbl">生命周期</div>
+        <div class="lc-track">
+          <div class="lc-seg" style="width:15%;background:#fbb040"></div>
+          <div class="lc-seg" style="width:55%;background:#ff6b9d"></div>
+          <div class="lc-seg" style="width:20%;background:#9f7aea"></div>
+          <div class="lc-seg" style="width:10%;background:#68d391"></div>
+        </div>
+        <div class="lc-labels">
+          <span class="lc-lbl-item">萌芽</span>
+          <span class="lc-lbl-item cur">▶ 爆发期</span>
+          <span class="lc-lbl-item">风格化</span>
+          <span class="lc-lbl-item">沉淀</span>
+        </div>
+      </div>
+      <div class="bc-imgs">
+        <img class="bc-img" src="imgs/danren_nail_01.webp" alt="">
+        <img class="bc-img" src="imgs/danren_nail_02.webp" alt="">
+        <img class="bc-img" src="imgs/danren_nail_03.webp" alt="">
+      </div>
+      <div class="bc-evidence">
+        <div class="bc-ev-title">数据证据（2026-03-20 实时更新）</div>
+        <div class="bc-ev-list">
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69538860000000001e02244b" target="_blank">「Nail share⋆⭒ 年度美甲18图合集✨」</a> · 03-20 · <strong>1.8万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/689df9f2000000001c03782b" target="_blank">「Live share｜淡人本甲🫧」</a> · 03-20 · <strong>1.5万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/68bfeb4f000000001d037716" target="_blank">「人生美甲+1 我愿称之为淡人气质美女甲」</a> · 03-20 · <strong>1.3万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69021dcb000000000503b50d" target="_blank">「清透感🤍干干净净」</a> · 03-20 · <strong>1.1万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/6990199c000000000c035748" target="_blank">「怎么能这么好看！！裸色系天菜短杏仁甲！」</a> · 03-20 · <strong>9610赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69a2882b000000000e00c75e" target="_blank">「Nail ☁️🫧 ⋆˙⟡🤍 🧺淡人早春美甲」</a> · 03-20 · <strong>8906赞</strong></div>
+        </div>
+      </div>
+      <div class="bc-variants">
+        <div class="bc-var-title">已识别变体</div>
+        <div class="bc-var-tags">
+          <span class="bvt bvt-hot">白开水美甲</span>
+          <span class="bvt bvt-hot">早春淡人甲</span>
+          <span class="bvt bvt-warm">淡人老钱风</span>
+          <span class="bvt bvt-warm">淡人ins风</span>
+          <span class="bvt bvt-cool">淡人多巴胺</span>
+        </div>
+      </div>
+      <div class="bc-alert">🔥 处于爆发期：KOL持续发力，与春日时令结合产生"早春淡人甲"合成词，建议立即投放</div>
+    </div>
+
+    <!-- 白女美甲 -->
+    <div class="bc">
+      <div class="bc-top">
+        <div>
+          <div class="bc-title">白女美甲</div>
+          <div class="bc-src">触发来源：社交文化概念（"白女"审美）· 持续沉淀中</div>
+        </div>
+        <div class="bc-heat"><div class="bc-score">87</div><div class="bc-score-lbl">热度指数</div></div>
+      </div>
+      <div class="lc">
+        <div class="lc-lbl">生命周期</div>
+        <div class="lc-track">
+          <div class="lc-seg" style="width:10%;background:#fbb040"></div>
+          <div class="lc-seg" style="width:25%;background:#ff6b9d"></div>
+          <div class="lc-seg" style="width:35%;background:#9f7aea"></div>
+          <div class="lc-seg" style="width:30%;background:#68d391"></div>
+        </div>
+        <div class="lc-labels">
+          <span class="lc-lbl-item">萌芽</span>
+          <span class="lc-lbl-item">爆发</span>
+          <span class="lc-lbl-item">风格化</span>
+          <span class="lc-lbl-item cur">▶ 沉淀期</span>
+        </div>
+      </div>
+      <div class="bc-imgs">
+        <img class="bc-img" src="imgs/bainv_nail_01.webp" alt="">
+        <img class="bc-img" src="imgs/haili_nail_01.webp" alt="">
+        <img class="bc-img" src="imgs/haili_nail_03.webp" alt="">
+      </div>
+      <div class="bc-evidence">
+        <div class="bc-ev-title">数据证据（2026-03-20 实时更新）</div>
+        <div class="bc-ev-list">
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/681f54aa000000000f03bac9" target="_blank">「为白女美甲💅特意化的白开水亚裔妆」</a> · 03-20 · <strong>5.1万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69aab153000000002303a298" target="_blank">「有点mean了」</a> · 03-20 · <strong>2.7万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/685bf158000000000d01b08d" target="_blank">「想把这个美甲焊在手上！！」</a> · 03-20 · <strong>1.4万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/686909210000000010026199" target="_blank">「老钱白女美甲」</a> · 03-20 · <strong>1.0万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/689f1215000000001c03dd9b" target="_blank">「一点都不mean💅🏻」</a> · 03-20 · <strong>8537赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/685400fb00000000100250fb" target="_blank">「🫧mark一些夏日淡人美甲 不招摇却贵气」</a> · 03-20 · <strong>8486赞</strong></div>
+        </div>
+      </div>
+      <div class="bc-variants">
+        <div class="bc-var-title">已识别变体</div>
+        <div class="bc-var-tags">
+          <span class="bvt bvt-hot">老钱白女甲</span>
+          <span class="bvt bvt-hot">baby蓝海莉甲</span>
+          <span class="bvt bvt-warm">皮粉海莉甲</span>
+          <span class="bvt bvt-cool">白女ins风</span>
+          <span class="bvt bvt-cool">初春白女甲</span>
+        </div>
+      </div>
+      <div class="bc-alert">📌 已进入风格经营期：建议以"白女风"为长效风格词持续运营，重点做变体词投放</div>
+    </div>
+
+    <!-- 老钱风 -->
+    <div class="bc">
+      <div class="bc-top">
+        <div>
+          <div class="bc-title">老钱风 / 拉夫劳伦美甲</div>
+          <div class="bc-src">触发来源：老钱风穿搭文化溢出 · 品牌联名（拉夫劳伦、miumiu）</div>
+        </div>
+        <div class="bc-heat"><div class="bc-score">85</div><div class="bc-score-lbl">热度指数</div></div>
+      </div>
+      <div class="lc">
+        <div class="lc-lbl">生命周期</div>
+        <div class="lc-track">
+          <div class="lc-seg" style="width:15%;background:#fbb040"></div>
+          <div class="lc-seg" style="width:30%;background:#ff6b9d"></div>
+          <div class="lc-seg" style="width:40%;background:#9f7aea"></div>
+          <div class="lc-seg" style="width:15%;background:#68d391"></div>
+        </div>
+        <div class="lc-labels">
+          <span class="lc-lbl-item">萌芽</span>
+          <span class="lc-lbl-item">爆发</span>
+          <span class="lc-lbl-item cur">▶ 风格化期</span>
+          <span class="lc-lbl-item">沉淀</span>
+        </div>
+      </div>
+      <div class="bc-imgs">
+        <img class="bc-img" src="imgs/cusuan_nail_01.webp" alt="">
+        <img class="bc-img" src="imgs/cusuan_nail_02.webp" alt="">
+        <img class="bc-img" src="imgs/qingming_nail_04.webp" alt="">
+      </div>
+      <div class="bc-evidence">
+        <div class="bc-ev-title">数据证据（2026-03-20 实时更新）</div>
+        <div class="bc-ev-list">
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/696dbc76000000001a0253e9" target="_blank">「新美甲live｜🌼故事里的小黄花～」</a> · 03-20 · <strong>3.5万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/6921756b000000001b026d14" target="_blank">「新美甲✨裸透猫眼+碎闪yyds！简约清透又贵气！」</a> · 03-20 · <strong>3.5万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/698206a3000000000a03f572" target="_blank">「盘点2025年度美甲和穿搭逻辑」</a> · 03-20 · <strong>3.2万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69a825c7000000001b01d9c0" target="_blank">「玻璃珠猫眼+法式太好看了」</a> · 03-20 · <strong>1.5万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/68c6892d000000001d038ff0" target="_blank">「老钱海莉天花板」</a> · 03-20 · <strong>1.3万赞</strong></div>
+          <div class="bc-ev-item"><a class="note-link" href="https://www.xiaohongshu.com/explore/69b50d02000000002301f919" target="_blank">「感觉很老钱风的美甲」</a> · 03-20 · <strong>1.1万赞</strong></div>
+        </div>
+      </div>
+      <div class="bc-variants">
+        <div class="bc-var-title">已识别变体</div>
+        <div class="bc-var-tags">
+          <span class="bvt bvt-hot">拉夫劳伦美甲</span>
+          <span class="bvt bvt-hot">miumiu风美甲</span>
+          <span class="bvt bvt-warm">高智感美甲</span>
+          <span class="bvt bvt-warm">鎏金猫眼</span>
+          <span class="bvt bvt-cool">老钱白女甲</span>
+        </div>
+      </div>
+      <div class="bc-alert">💡 商机缺口：联想词出现"拉夫劳伦美甲""miumiu风美甲"，平台供给可能不足，建议核查站内SKU覆盖情况</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB3 ===== -->
+<div class="panel" id="p-strategy">
+  <div class="strat-bar">
+    <div class="strat-filters">
+      <button class="fb active" onclick="filterStrat('all',this)">全部 (9)</button>
+      <button class="fb" onclick="filterStrat('seasonal',this)">🌸 时令热点</button>
+      <button class="fb" onclick="filterStrat('burst',this)">⚡ 突发热点</button>
+      <button class="fb" onclick="filterStrat('combined',this)">✨ 时令×突发</button>
+      <button class="fb" onclick="filterStrat('gap',this)">🚨 有供给缺口</button>
+    </div>
+    <div class="strat-cnt">今日更新：2026-03-13 09:00 · 共 9 条策略 · 点击「发布策略」即推送至搜索投放系统</div>
+  </div>
+
+  <div class="strat-list">
+
+    <!-- 策略0: 海莉醋酸甲 -->
+    <div class="sc sc-combined" data-type="combined" data-gap="1">
+      <div class="sc-head">
+        <div class="sc-kw">海莉醋酸甲</div>
+        <span class="sc-type-badge stb-c">✨ 时令 × 突发</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-b">突发热点</span>「海莉甲」（热度93，风格化期）的最强变体词「海莉醋酸甲」已超过本体词搜索量
+        × <span class="origin-tag ot-s">时令热点</span>「春分·春夏展期」（距今7天，换甲高峰）
+        <br>→ 合成词：<strong>「春夏海莉醋酸白月光」「海莉醋酸玫瑰金法式」</strong>
+        <br>验证依据：<a class="note-link" href="https://www.xiaohongshu.com/explore/699496a8000000001a02ac02" target="_blank">「醋酸➕海莉甲💅美得很安心！」</a> <strong>1.8万赞</strong>，<a class="note-link" href="https://www.xiaohongshu.com/explore/69afe2f7000000002603df7a" target="_blank">「SIX SALON｜春夏海莉醋酸白月光」</a> <strong>2.5万赞（03-04）</strong>。搜索联想词已出现“海莉醋酸甲”“海莉醋酸玫瑰金法式”，用户需求明确。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">海莉醋酸甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">海莉醋酸玫瑰金法式</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">春夏海莉醋酸白月光</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">海莉甲显白</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">海莉甲和醋酸美甲的区别</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">水光猫眼海莉甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">醋酸透明感</span>
+            <span class="recall-feat">珍珠白/奶油色</span>
+            <span class="recall-feat">法式款型</span>
+            <span class="recall-feat">极简无装饰</span>
+            <span class="recall-feat">中长甲/杏仁甲</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/haili_cusuan_01.webp" alt="海莉醋酸甲">
+            <img class="recall-img" src="imgs/haili_cusuan_02.webp" alt="醋酸+海莉">
+            <img class="recall-img" src="imgs/haili_cusuan_04.webp" alt="海莉醋酸">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">醋酸透明感款</span><span class="supply-nums">SKU 18/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-gap" style="width:36%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">法式+珍珠白款</span><span class="supply-nums">SKU 22/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:44%"></div></div>
+          </div>
+          <div class="gap-alert">
+            <div class="gap-alert-title">🚨 供给缺口警示</div>
+            <div class="gap-alert-text">醋酸透明感款式覆盖仅 36%，远不足需求。建议立即发起促产：补充「醋酸透明感」+「珍珠白法式」款式至 50+ SKU</div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-promo" onclick="toast('促产通知已发送！目标：补充醋酸透明感+珍珠白法式款式至 50+ SKU')">&#x1F514; 发起促产</button><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~11,500次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略1 -->
+    <div class="sc sc-combined" data-type="combined" data-gap="0">
+      <div class="sc-head">
+        <div class="sc-kw">法式+江坂丽奈色</div>
+        <span class="sc-type-badge stb-c">✨ 时令 × 突发</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-b">突发热点</span>「江坂丽奈美甲」（热度96，风格化期）
+        × <span class="origin-tag ot-s">时令热点</span>「春分·早春」（距今7天，换甲高峰）
+        <br>→ 合成词：<strong>「法式+江坂丽奈色=春日美女必做甲」</strong>
+        <br>验证依据：小红书已有笔记"法式+江坂丽奈色=春日美女必做甲" <strong>5629赞（02-28）</strong>，用户自发产生合成词，信号强烈。KOL雨祭Yujinails专门发调色教程1.4万赞，工艺需求旺盛。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">法式江坂丽奈美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">江坂丽奈色美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">春日娇嗲美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">江坂丽奈改良版</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">早春法式美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">江坂丽奈色系（粉棕/玫瑰棕）</span>
+            <span class="recall-feat">法式款型</span>
+            <span class="recall-feat">猫眼工艺</span>
+            <span class="recall-feat">娇嗲感</span>
+            <span class="recall-feat">中长甲</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/ezaka_nail_01.webp" alt="">
+            <img class="recall-img" src="imgs/ezaka_nail_02.webp" alt="">
+            <img class="recall-img" src="imgs/ezaka_nail_04.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">江坂丽奈色系款</span><span class="supply-nums">SKU 36/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:72%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">法式+猫眼工艺</span><span class="supply-nums">SKU 32/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:64%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">春日娇嗲风格</span><span class="supply-nums">SKU 24/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:48%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-promo" onclick="toast('促产通知已发送！目标：补充江坂丽奈色系款式至50+')">发起促产</button><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~9,200次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略2 -->
+    <div class="sc sc-combined" data-type="combined" data-gap="0">
+      <div class="sc-head">
+        <div class="sc-kw">早春淡人美甲</div>
+        <span class="sc-type-badge stb-c">✨ 时令 × 突发</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-b">突发热点</span>「淡人甲/白开水美甲」（热度91，爆发期，KOL男人相持续推动）
+        × <span class="origin-tag ot-s">时令热点</span>「春分·早春」
+        <br>→ 合成词：<strong>「早春淡人美甲」「初春白女甲」</strong>
+        <br>验证依据：小红书已有笔记"好满意我的早春版白女美甲！！！！" <strong>6335赞（03-06）</strong>，"Nail☁️淡人早春美甲" <strong>8271赞（02-28）</strong>，用户已自发产生合成词。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">早春淡人美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">白开水美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">初春白女甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">淡人老钱风美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">冰透裸色美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">裸色/白色系</span>
+            <span class="recall-feat">极简无装饰</span>
+            <span class="recall-feat">冰透感</span>
+            <span class="recall-feat">短甲/方圆甲</span>
+            <span class="recall-feat">高级显白</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/danren_nail_01.webp" alt="">
+            <img class="recall-img" src="imgs/danren_nail_03.webp" alt="">
+            <img class="recall-img" src="imgs/spring_nail_06.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">裸色极简款</span><span class="supply-nums">SKU 40/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-ok" style="width:80%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">冰透白开水质感</span><span class="supply-nums">SKU 28/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:56%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~7,800次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略3 -->
+    <div class="sc sc-seasonal" data-type="seasonal" data-gap="1">
+      <div class="sc-head">
+        <div class="sc-kw">春日莫奈油画美甲</div>
+        <span class="sc-type-badge stb-s">🌸 时令热点</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-s">时令热点</span>「春分·春日」
+        + 今年垂类信号「莫奈油画风」（搜索联想词扫描发现，今年上升信号）
+        <br>→ 搜索词：<strong>「春日莫奈美甲」「莫奈花园油画美甲」</strong>
+        <br>验证依据：近期高互动笔记"春日莫奈油画花园🫧温柔又显白" <strong>3761赞（03-05）</strong>，联想词出现"莫奈油画风美甲""早春莫奈美甲"，持续上升。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">春日莫奈美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">莫奈花园油画美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">早春莫奈美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">手绘美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">油画晕染感</span>
+            <span class="recall-feat">手绘花卉</span>
+            <span class="recall-feat">粉紫/粉蓝色系</span>
+            <span class="recall-feat">温柔显白</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/monet_nail_01.webp" alt="">
+            <img class="recall-img" src="imgs/monet_nail_02.webp" alt="">
+            <img class="recall-img" src="imgs/qingming_nail_02.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">油画晕染款</span><span class="supply-nums">SKU 22/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-gap" style="width:44%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">手绘花卉款</span><span class="supply-nums">SKU 26/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:52%"></div></div>
+          </div>
+          <div class="gap-alert">
+            <div class="gap-alert-title">🚨 供给缺口</div>
+            <div class="gap-alert-text">油画晕染款供给不足（44%），建议发起促产：补充莫奈风油画晕染款式至50+</div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-promo" onclick="toast('促产通知已发送！目标：补充油画晕染款式至50+')">发起促产</button><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~5,400次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略4 -->
+    <div class="sc sc-seasonal" data-type="seasonal" data-gap="1">
+      <div class="sc-head">
+        <div class="sc-kw">2026郁金香美甲</div>
+        <span class="sc-type-badge stb-s">🌸 时令热点</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-s">时令热点</span>「春分·花卉」
+        + 今年新增垂类信号「郁金香美甲」（搜索联想词扫描发现，今年首次出现）
+        <br>→ 搜索词：<strong>「2026郁金香美甲」「郁金香穿戴甲」</strong>
+        <br>验证依据：搜索"2026美甲"联想词出现"郁金香"，为今年新增信号，历史无此词，属于新兴热点，商机缺口大。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">2026郁金香美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">郁金香穿戴甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">春日花卉美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">立体造型美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">郁金香造型</span>
+            <span class="recall-feat">立体花卉</span>
+            <span class="recall-feat">穿戴甲</span>
+            <span class="recall-feat">猫眼款</span>
+            <span class="recall-feat">粉/红色系</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/tulip_nail_01.webp" alt="">
+            <img class="recall-img" src="imgs/tulip_nail_03.webp" alt="">
+            <img class="recall-img" src="imgs/tulip_nail_04.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">郁金香造型款</span><span class="supply-nums">SKU 11/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-gap" style="width:22%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">立体花卉穿戴甲</span><span class="supply-nums">SKU 9/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-gap" style="width:18%"></div></div>
+          </div>
+          <div class="gap-alert">
+            <div class="gap-alert-title">🚨 供给严重不足</div>
+            <div class="gap-alert-text">郁金香为今年新增词，供给仅18-22%，商机缺口极大，建议立即发起促产，目标SKU≥50</div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-promo" onclick="toast('促产通知已发送！目标：郁金香款式SKU≥50，优先立体造型+穿戴甲')">发起促产</button><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~4,100次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略5 -->
+    <div class="sc sc-burst" data-type="burst" data-gap="1">
+      <div class="sc-head">
+        <div class="sc-kw">老钱风 / 拉夫劳伦美甲</div>
+        <span class="sc-type-badge stb-b">⚡ 突发热点</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-b">突发热点</span>「老钱风美甲」（热度82，风格化期）
+        + 品牌联名信号「拉夫劳伦」「miumiu」（联想词扫描发现）
+        <br>→ 搜索词：<strong>「拉夫劳伦美甲」「miumiu风美甲」「高智感美甲」</strong>
+        <br>验证依据：搜索"老钱风美甲"联想词出现"拉夫劳伦美甲""miumiu风美甲"，搜索"张元英美甲"也出现"miumiu风美甲"，品牌词已形成独立搜索需求。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">老钱风美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">拉夫劳伦美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">miumiu风美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">高智感美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">鎏金猫眼美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">裸色/米白/深棕</span>
+            <span class="recall-feat">鎏金猫眼</span>
+            <span class="recall-feat">高级贵气感</span>
+            <span class="recall-feat">中长甲</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/cusuan_nail_02.webp" alt="">
+            <img class="recall-img" src="imgs/qingming_nail_04.webp" alt="">
+            <img class="recall-img" src="imgs/bainv_nail_01.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">老钱风裸色款</span><span class="supply-nums">SKU 29/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:58%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">鎏金猫眼款</span><span class="supply-nums">SKU 15/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-gap" style="width:30%"></div></div>
+          </div>
+          <div class="gap-alert">
+            <div class="gap-alert-title">🚨 供给缺口</div>
+            <div class="gap-alert-text">鎏金猫眼款供给不足（30%），建议补充高智感猫眼款式</div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-promo" onclick="toast('促产通知已发送！目标：补充鎏金猫眼款式至50+')">发起促产</button><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~6,300次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略6 -->
+    <div class="sc sc-burst" data-type="burst" data-gap="0">
+      <div class="sc-head">
+        <div class="sc-kw">薄荷曼波冰透甲</div>
+        <span class="sc-type-badge stb-b">⚡ 突发热点</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-b">突发热点</span>「薄荷曼波」（热度78，爆发期）+ 今年春天色彩趋势「薄荷绿」
+        <br>→ 搜索词：<strong>「薄荷曼波美甲」「薄荷绿镜面美甲」</strong>
+        <br>验证依据：搜索"春日美甲"出现"薄荷曼波色"笔记1.3万赞，"绿沙沙牛乳冰"1.1万赞，联想词出现"薄荷拿铁美甲"，色彩词已形成独立搜索。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">薄荷曼波美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">薄荷绿猫眼美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">冰透薄荷蓝美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">薄荷生巧美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">薄荷绿/冰绿色</span>
+            <span class="recall-feat">镜面工艺</span>
+            <span class="recall-feat">法式款</span>
+            <span class="recall-feat">清冷感</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/bohol_nail_01.webp" alt="">
+            <img class="recall-img" src="imgs/bohol_nail_02.webp" alt="">
+            <img class="recall-img" src="imgs/bohol_nail_03.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">薄荷绿色系款</span><span class="supply-nums">SKU 38/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-ok" style="width:76%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">镜面工艺款</span><span class="supply-nums">SKU 34/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-ok" style="width:68%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~6,500次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略7 -->
+    <div class="sc sc-burst" data-type="burst" data-gap="0">
+      <div class="sc-head">
+        <div class="sc-kw">白女美甲 / 海莉甲</div>
+        <span class="sc-type-badge stb-b">⚡ 突发热点</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-b">突发热点</span>「白女美甲」（热度88，沉淀期，长效风格词）
+        <br>→ 搜索词：<strong>「白女美甲」「海莉甲」「baby蓝海莉美甲」</strong>
+        <br>验证依据：已进入沉淀期，单篇最高5.2万赞，联想词出现"baby蓝海莉美甲""皮粉海莉美甲"等变体词，适合作为长效词持续投放。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">白女美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">baby蓝海莉美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">皮粉海莉美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">珍珠光泽美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">珍珠白/奶白色</span>
+            <span class="recall-feat">珠光质感</span>
+            <span class="recall-feat">极简无装饰</span>
+            <span class="recall-feat">中长甲/杏仁甲</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/haili_nail_01.webp" alt="">
+            <img class="recall-img" src="imgs/haili_nail_03.webp" alt="">
+            <img class="recall-img" src="imgs/haili_nail_04.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">珍珠白极简款</span><span class="supply-nums">SKU 38/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-ok" style="width:76%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">baby蓝色系款</span><span class="supply-nums">SKU 21/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-warn" style="width:42%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~8,100次/天</div>
+      </div>
+    </div>
+
+    <!-- 策略8 -->
+    <div class="sc sc-seasonal" data-type="seasonal" data-gap="0">
+      <div class="sc-head">
+        <div class="sc-kw">初春豆沙裸色法式</div>
+        <span class="sc-type-badge stb-s">🌸 时令热点</span>
+      </div>
+      <div class="sc-origin">
+        <span class="origin-tag ot-s">时令热点</span>「春分·早春」
+        + 垂类信号「豆沙裸色」（搜索联想词扫描发现，上升信号）
+        <br>→ 搜索词：<strong>「初春豆沙裸色美甲」「温柔裸色法式美甲」</strong>
+        <br>验证依据：热门笔记"温柔的春天和温柔的豆沙裸更配哦" <strong>7486赞（02-26）</strong>，联想词出现"初春浅色系美甲""豆沙裸美甲"。
+      </div>
+      <div class="sc-body">
+        <div>
+          <div class="sc-sec-title">搜索词包</div>
+          <div class="kw-list">
+            <div class="kw-row"><span class="kw-text">初春豆沙裸色美甲</span><span class="kw-pri kp-h">高优</span></div>
+            <div class="kw-row"><span class="kw-text">温柔裸色法式</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">初春浅色系美甲</span><span class="kw-pri kp-m">中优</span></div>
+            <div class="kw-row"><span class="kw-text">法式美甲</span><span class="kw-pri kp-l">补充</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">落地页款式召回</div>
+          <div class="recall-feats">
+            <span class="recall-feat">豆沙色/裸粉色</span>
+            <span class="recall-feat">法式款型</span>
+            <span class="recall-feat">温柔显白</span>
+            <span class="recall-feat">短中甲</span>
+          </div>
+          <div class="recall-imgs">
+            <img class="recall-img" src="imgs/spring_nail_05.webp" alt="">
+            <img class="recall-img" src="imgs/spring_nail_07.webp" alt="">
+            <img class="recall-img" src="imgs/qingming_nail_03.webp" alt="">
+          </div>
+        </div>
+        <div>
+          <div class="sc-sec-title">供给摸排</div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">豆沙裸色款</span><span class="supply-nums">SKU 35/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-ok" style="width:70%"></div></div>
+          </div>
+          <div class="supply-item">
+            <div class="supply-row"><span class="supply-name">裸色法式款</span><span class="supply-nums">SKU 39/需求50</span></div>
+            <div class="supply-bar"><div class="supply-fill sf-ok" style="width:78%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div><button class="btn-pub" onclick="pubStrat(this)">发布策略</button></div>
+        <div class="sc-est">预计覆盖搜索量 ~5,900次/天</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lb" onclick="closeLb(event)">
+  <span class="lb-close" onclick="document.getElementById('lb').classList.remove('open')">✕</span>
+  <img class="lb-img" id="lb-img" src="" alt="">
+  <div class="lb-caption" id="lb-cap"></div>
+</div>
+
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('p-' + id).classList.add('active');
+}
+
+function showNode(id, el) {
+  document.querySelectorAll('.s-node').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('[id^="node-"]').forEach(d => d.style.display = 'none');
+  const node = document.getElementById('node-' + id);
+  if (node) node.style.display = 'block';
+}
+
+function filterStrat(type, el) {
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.sc').forEach(card => {
+    if (type === 'all') card.style.display = '';
+    else if (type === 'gap') card.style.display = card.dataset.gap === '1' ? '' : 'none';
+    else card.style.display = card.dataset.type === type ? '' : 'none';
+  });
+}
+
+function pubStrat(btn) {
+  if (btn.classList.contains('published')) return;
+  btn.classList.add('published');
+  btn.textContent = '✓ 已发布';
+  toast('策略已发布！搜索词投放已生效，落地页召回已更新。');
+}
+
+function toast(msg, isWarn) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isWarn ? ' warn' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Lightbox
+function openLb(src, caption) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-cap').textContent = caption || '';
+  document.getElementById('lb').classList.add('open');
+}
+function closeLb(e) {
+  if (e.target === document.getElementById('lb') || e.target === document.getElementById('lb-img')) {
+    document.getElementById('lb').classList.remove('open');
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('lb').classList.remove('open');
+});
+
+// Auto-bind all clickable images on load
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.bc-img, .sig-img, .recall-img').forEach(img => {
+    img.addEventListener('click', () => openLb(img.src, img.alt || img.closest('[class*="bc"]')?.querySelector('.bc-title')?.textContent || ''));
+  });
+});
+</script>
+</body>
+</html>
